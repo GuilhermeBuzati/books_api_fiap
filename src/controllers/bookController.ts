@@ -86,3 +86,28 @@ export const updateBookById = async (req: Request, res: Response): Promise<void>
     }
 };
 
+export const deleteBookById = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const bookId: number = parseInt(req.params.id); // Extrai o ID do parâmetro da rota
+        if (isNaN(bookId)) {
+            res.status(400).json({ message: 'ID do livro inválido' });
+            return;
+        }
+
+        // Query para excluir o livro pelo ID
+        const query = 'DELETE FROM books WHERE id = $1 RETURNING *';
+        const { rows } = await pool.query(query, [bookId]);
+
+        if (rows.length === 0) {
+            res.status(404).json({ message: 'Livro não encontrado' });
+        } else {
+            res.status(200).json({ message: 'Deleteado com sucesso' });
+        }
+
+    } catch (error) {
+        console.error('Error deleting book by ID:', error);
+        res.status(500).json({ message: 'Erro interno do servidor' });
+    }
+};
+
+
