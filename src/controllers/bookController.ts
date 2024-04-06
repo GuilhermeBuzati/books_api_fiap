@@ -22,3 +22,33 @@ export const createBook = async (req: Request, res: Response): Promise<void> => 
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+export const getBookById = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const bookId: number = parseInt(req.params.id); // Extrai o ID do parâmetro da rota
+        if (isNaN(bookId)) {
+            res.status(400).json({ message: 'ID do livro inválido' });
+            return;
+        }
+
+        // Query para selecionar o livro pelo ID
+        const query = 'SELECT * FROM books WHERE id = $1';
+        const { rows } = await pool.query(query, [bookId]);
+        if (rows.length === 0) {
+            res.status(404).json({ message: 'Livro não encontrado' });
+        } else {
+            const bookData = rows[0];
+            const book = new Book(
+                bookData.title,
+                bookData.author,
+                bookData.isbn,
+                bookData.release_date
+            );
+            res.json(book);
+        }
+
+    } catch (error) {
+        console.error('Error retrieving book by ID:', error);
+        res.status(500).json({ message: 'Erro interno do servidor' });
+    }
+};
