@@ -52,3 +52,37 @@ export const getBookById = async (req: Request, res: Response): Promise<void> =>
         res.status(500).json({ message: 'Erro interno do servidor' });
     }
 };
+
+export const updateBookById = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const bookId: number = parseInt(req.params.id); // Extrai o ID do parâmetro da rota
+        if (isNaN(bookId)) {
+            res.status(400).json({ message: 'ID do livro inválido' });
+            return;
+        }
+
+        // Extrai os dados do corpo da requisição
+        const { title, author, isbn, releaseDate } = req.body;
+
+        // Query para atualizar o livro pelo ID
+        const query = 'UPDATE books SET title = $1, author = $2, isbn = $3, release_date = $4 WHERE id = $5 RETURNING *';
+        const { rows } = await pool.query(query, [title, author, isbn, releaseDate, bookId]);
+
+        if (rows.length === 0) {
+            res.status(404).json({ message: 'Livro não encontrado' });
+        } else {
+            const updatedBook = new Book(
+                rows[0].title,
+                rows[0].author,
+                rows[0].isbn,
+                rows[0].release_date
+            );
+            res.json(updatedBook);
+        }
+
+    } catch (error) {
+        console.error('Error updating book by ID:', error);
+        res.status(500).json({ message: 'Erro interno do servidor' });
+    }
+};
+

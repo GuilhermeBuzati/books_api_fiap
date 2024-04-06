@@ -1,5 +1,5 @@
 import express from 'express';
-import { createBook, getBookById } from '../controllers/bookController';
+import { createBook, getBookById, updateBookById } from '../controllers/bookController';
 
 const router = express.Router();
 
@@ -7,5 +7,7 @@ const router = express.Router();
 router.post('/books', createBook);
 
 router.get('/books/:id', getBookById);
+
+router.put('/books/:id/edit', updateBookById);
 
 export default router;
